@@ -1,0 +1,33 @@
+# version: "3.8"
+# services:
+#   backend:
+#     image: 0efc2ac9c983 # Ваш ID образа из Docker Desktop
+#     container_name: molscribe-api-v2
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       # Подключаем папку с весами (замените путь если папка называется иначе)
+#       - ./backend/model.pth
+#     deploy:
+#       resources:
+#         limits:
+#           memory: 4G # Даем нейросети достаточно оперативной памяти
+#     restart: always
+
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # Монтируем локальную папку с весами в папку внутри контейнера
+      # Формат: <путь_на_хосте>:<путь_в_контейнере>
+      - ./backend/models:/app/models
+    # Если нужно, можно явно передать путь к файлу через переменную окружения
+    environment:
+      - MODEL_PATH=/app/models/model.pth
+    restart: unless-stopped
