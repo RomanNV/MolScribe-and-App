@@ -24,10 +24,15 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Монтируем локальную папку с весами в папку внутри контейнера
-      # Формат: <путь_на_хосте>:<путь_в_контейнере>
       - ./backend/models:/app/models
-    # Если нужно, можно явно передать путь к файлу через переменную окружения
     environment:
       - MODEL_PATH=/app/models/model.pth
+    # Блок deploy крайне важен для проброса GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     restart: unless-stopped

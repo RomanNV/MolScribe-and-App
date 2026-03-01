@@ -316,16 +316,34 @@ MODEL_PATH = os.getenv("MODEL_PATH", "models/model.pth")
 model = None
 
 # Инициализация модели при запуске
+# if os.path.exists(MODEL_PATH):
+#     try:
+#         # MolScribe может требовать device='cpu' в Docker без GPU
+#         if os.path.exists(MODEL_PATH):
+#     try:
+#         import torch
+#         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+#         model = MolScribe(MODEL_PATH, device=device)
+#         print(f"SUCCESS: Model loaded on {device.upper()}")
+#     except Exception as e:
+#         print(f"ERROR: {e}")
+#         print(f"SUCCESS: Model loaded successfully from {MODEL_PATH}")
+#     except Exception as e:
+#         print(f"ERROR: Failed to initialize model: {e}")
+# else:
+#     print(f"ERROR: Model file not found at {MODEL_PATH}. Check your docker-compose volumes.")
 if os.path.exists(MODEL_PATH):
     try:
-        # MolScribe может требовать device='cpu' в Docker без GPU
-        model = MolScribe(MODEL_PATH, device='cpu')
-        print(f"SUCCESS: Model loaded successfully from {MODEL_PATH}")
+        import torch
+        # Явно создаем объект device
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model = MolScribe(MODEL_PATH, device=device)
+        print(f"SUCCESS: Model loaded on {device}")
     except Exception as e:
         print(f"ERROR: Failed to initialize model: {e}")
 else:
-    print(f"ERROR: Model file not found at {MODEL_PATH}. Check your docker-compose volumes.")
-
+    print(f"ERROR: Model file not found at {MODEL_PATH}")
+    
 @app.get("/")
 def read_root():
     return {
