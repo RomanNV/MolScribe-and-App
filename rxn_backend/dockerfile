@@ -1,0 +1,31 @@
+FROM nvidia/cuda:11.7.1-cudnn8-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1 
+
+RUN apt-get update && apt-get install -y \
+    python3-pip python3-dev git libgl1-mesa-glx libglib2.0-0 wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN pip3 install --upgrade pip
+
+WORKDIR /app
+
+# 1. Установка PyTorch (как у вас, это правильно)
+RUN pip3 install --no-cache-dir \
+    torch==1.13.1+cu117 torchvision==0.14.1+cu117 \
+    --extra-index-url https://download.pytorch.org/whl/cu117
+
+# 2. Установка зависимостей (обязательно добавьте этот блок)
+# Файл requirements.txt должен лежать в папке rxn_backend/
+COPY rxn_backend/requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# 3. Установка самого RXNScribe
+RUN pip3 install --no-cache-dir git+https://github.com/thomas0809/RxnScribe.git
+
+# 4. Копируем ваш дебаг-скрипт и остальной код из папки сервиса
+COPY rxn_backend/ .
+
+CMD ["/bin/bash"]
